@@ -137,9 +137,28 @@
   #gate a, #gate button { color: var(--fg); font: inherit; font-size: 12px; letter-spacing: .16em; text-transform: uppercase; text-decoration: none; }
   #gate a:hover, #gate a:focus-visible, #gate button:hover, #gate button:focus-visible { color: var(--signal); outline: none; text-decoration: underline; text-underline-offset: 6px; }
   #gate button { appearance: none; background: none; border: 0; padding: 0; cursor: pointer; color: var(--dim); }
-  #gate .g-soon { max-width: 30rem; color: var(--fg); font-size: 14px; line-height: 1.6; text-wrap: pretty; }
+  #gate .g-desc { margin: 0; max-width: 28rem; font-family: var(--display); font-weight: 500; font-size: clamp(16px, 4.2vw, 19px); line-height: 1.5; text-wrap: pretty; }
+  #gate .g-soon { color: var(--signal); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+  #gate a { border: 1px solid var(--signal); padding: 11px 20px; }
+
+  /* Hover description. Desktop and other hover devices only; phones show it on the opened page. */
+  #tip {
+    position: fixed; z-index: 3; left: 0; top: 0; width: max-content; max-width: min(21rem, calc(100vw - 32px));
+    padding: 12px 14px; background: rgb(var(--bg-rgb) / .95); border: 1px solid var(--line);
+    font-family: var(--display); font-weight: 500; font-size: 15px; line-height: 1.45; color: var(--fg); text-wrap: pretty;
+    opacity: 0; transform: translateY(4px); pointer-events: none;
+    transition: opacity .2s ease, transform .25s cubic-bezier(.2,.7,.2,1);
+  }
+  #tip.on { opacity: 1; transform: none; }
+  @media (hover: none) { #tip { display: none; } }
+
+  @media (max-width: 440px) {
+    .node { white-space: nowrap; font-size: 12.5px; letter-spacing: .12em; gap: .55em; }
+    .role { letter-spacing: .1em; }
+  }
 
   @media (prefers-reduced-motion: reduce) {
+    #tip { transition: none; }
     .stage, .node, #gate, #gate .g-actions { transition: none; }
     .leaving .stage { transform: none; }
   }
@@ -172,10 +191,13 @@
   </footer>
 </main>
 
+<div id="tip" role="tooltip" aria-hidden="true"></div>
+
 <div id="gate" hidden role="dialog" aria-label="Opening project">
   <div class="g-label" id="gLabel"></div>
   <div class="g-coords" id="gCoords"></div>
-  <div class="g-soon" id="gSoon" hidden></div>
+  <p class="g-desc" id="gDesc"></p>
+  <div class="g-soon" id="gSoon" hidden>Coming soon</div>
   <div class="g-actions">
     <a id="gLink" href="#" target="_blank" rel="noopener" hidden>Open →</a>
     <button id="gBack" type="button">← Return</button>
@@ -187,19 +209,25 @@
    EDIT HERE. Add, remove or reorder links in LINKS. Nothing else needs to change.
    label: text on the page      url: where it goes ("" shows the soon message instead)
    place: shown while hovering  lat / lon: where the atlas and globe fly to
-   soon:  optional message for something that is not live yet
+   desc:  one sentence shown on hover (and on the page a tap opens on phones)
    ============================================================ */
 const HOME = { lat: 32.82, lon: 35.50 };
 
 const LINKS = [
-  { label: "Edut",            url: "https://edutfilms.com",                place: "Galilee",            lat: 32.82, lon: 35.50 },
-  { label: "Writing",         url: "https://michaelfolta.wordpress.com",   place: "Galilee",            lat: 32.82, lon: 35.50 },
-  { label: "Architecture",    url: "https://bio.site/recovery",            place: "Lancing, Tennessee", lat: 36.08, lon: -84.66 },
-  { label: "One Step Closer", url: "https://www.onestepcloser.org",        place: "Jerusalem",          lat: 31.77, lon: 35.21 },
-  { label: "Jesus People SF", url: "https://jesuspeoplesf.com/",           place: "San Francisco",      lat: 37.77, lon: -122.42 },
-  { label: "Run 1000 Hills",  url: "https://www.youtube.com/@run1000hills", place: "Kigali, Rwanda",    lat: -1.95, lon: 30.06 },
-  { label: "Holy Land",       url: "", place: "Holy Land", lat: 31.90, lon: 35.20,
-    soon: "Coming soon. A new YouTube channel of biblical ASMR drone footage, set to worship music in Hebrew and Arabic." }
+  { label: "Edut", url: "https://edutfilms.com", place: "Galilee", lat: 32.82, lon: 35.50,
+    desc: "Films and photographs for pilgrim groups in the Holy Land, plus short films for churches, schools and organizations." },
+  { label: "Writing", url: "https://michaelfolta.wordpress.com", place: "Galilee", lat: 32.82, lon: 35.50,
+    desc: "A personal faith blog, run1000hills, with reflections on family, growth and renewal." },
+  { label: "Architecture", url: "https://bio.site/recovery", place: "Lancing, Tennessee", lat: 36.08, lon: -84.66,
+    desc: "Rest. Recover. Renew., a retreat center planned for 135 acres in East Tennessee, grown out of a 2023 Virginia Tech thesis." },
+  { label: "One Step Closer", url: "https://www.onestepcloser.org", place: "Magdala, Galilee", lat: 32.83, lon: 35.52,
+    desc: "Christians from different traditions serving pilgrims together at Magdala on the Sea of Galilee, working toward unity." },
+  { label: "Jesus People SF", url: "https://jesuspeoplesf.com/", place: "San Francisco", lat: 37.77, lon: -122.42,
+    desc: "A San Francisco church plant reaching the Haight-Ashbury neighborhood, with online preaching and pastoral counsel." },
+  { label: "Run 1000 Hills", url: "https://www.youtube.com/@run1000hills", place: "Kigali, Rwanda", lat: -1.95, lon: 30.06,
+    desc: "Videos from around the world: Rwanda, San Francisco and the Holy Land." },
+  { label: "Bible Lands by Drone", url: "", place: "Bible Lands", lat: 31.90, lon: 35.20,
+    desc: "A coming YouTube channel of biblical ASMR drone footage, set to worship music in Hebrew and Arabic." }
 ];
 
 /* Dots on the globe and atlas. kind: "lived" (filled) or "site" (hollow). */
@@ -432,11 +460,24 @@ requestAnimationFrame(frame);
 /* ---------- Hover: fly the atlas and globe ---------- */
 const coordsEl = $("coords");
 const IDLE_SPAN = 40, NEAR_SPAN = 14;
-function setHome() { coordsEl.textContent = fmt(HOME.lat, HOME.lon); fly(HOME.lat, HOME.lon, IDLE_SPAN); }
-function setPlace(l) { coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); }
+const tip = $("tip");
+const canHover = window.matchMedia("(hover: hover)").matches;
+function showTip(a, l) {
+  if (!canHover || !l.desc) return;
+  tip.textContent = l.desc;
+  const r = a.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+  let x = r.right + 38, y = r.top + r.height / 2 - th / 2;
+  if (x + tw > window.innerWidth - 16) { x = Math.max(16, r.left); y = r.bottom + 8; }
+  y = Math.max(12, Math.min(y, window.innerHeight - th - 12));
+  tip.style.left = Math.round(x) + "px"; tip.style.top = Math.round(y) + "px";
+  tip.classList.add("on");
+}
+function hideTip() { tip.classList.remove("on"); }
+function setHome() { hideTip(); coordsEl.textContent = fmt(HOME.lat, HOME.lon); fly(HOME.lat, HOME.lon, IDLE_SPAN); }
+function setPlace(l, a) { coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); showTip(a, l); }
 setHome();
-nav.addEventListener("mouseover", e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i]); });
-nav.addEventListener("focusin",   e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i]); });
+nav.addEventListener("mouseover", e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
+nav.addEventListener("focusin",   e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
 nav.addEventListener("mouseleave", setHome);
 nav.addEventListener("focusout", e => { if (!nav.contains(e.relatedTarget)) setHome(); });
 
@@ -448,13 +489,16 @@ function leave(l) {
   $("gLabel").textContent = l.label;
   $("gCoords").textContent = fmt(l.lat, l.lon);
   const link = $("gLink");
+  $("gDesc").textContent = l.desc || "";
   if (l.url) { link.href = l.url; link.textContent = "Open " + l.label + " →"; link.hidden = false; $("gSoon").hidden = true; }
-  else { link.hidden = true; $("gSoon").textContent = l.soon || "Opening soon."; $("gSoon").hidden = false; }
+  else { link.hidden = true; $("gSoon").hidden = false; }
+  hideTip();
   document.body.classList.add("leaving");
   fly(l.lat, l.lon, .8);
   gate.hidden = false;
   later(() => gate.classList.add("on"), reduce ? 0 : 650);
-  if (l.url) later(() => { try { link.click(); } catch (e) {} }, reduce ? 150 : 1700);
+  /* Phones stay on this page so the description can be read. Tap Open to continue. */
+  if (l.url && canHover) later(() => { try { link.click(); } catch (e) {} }, reduce ? 150 : 2600);
   later(() => { (l.url ? link : $("gBack")).focus({ preventScroll: true }); }, reduce ? 50 : 1300);
 }
 function back() {
