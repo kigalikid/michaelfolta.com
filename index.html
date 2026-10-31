@@ -141,6 +141,41 @@
   #gate .g-soon { color: var(--signal); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
   #gate a { border: 1px solid var(--signal); padding: 11px 20px; }
 
+  /* Run 1000 Hills carousel */
+  #gate { overflow-y: auto; align-content: safe center; }
+  #gate .g-actions { flex-wrap: wrap; justify-content: center; align-items: center; row-gap: 14px; }
+  #gate .g-buttons { display: contents; }
+  #gate .g-feed { width: min(36rem, 100%); display: grid; gap: 10px; }
+  #frame { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #0d0f12; border: 1px solid var(--line); overflow: hidden; }
+  #frame iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  #gate .slide {
+    position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; box-sizing: border-box;
+    background-color: transparent; background-size: cover; background-position: center;
+    display: grid; place-items: center; cursor: pointer; text-decoration: none; color: var(--fg);
+    animation: slideIn .45s ease;
+  }
+  #gate .slide .play {
+    width: 58px; height: 58px; border: 1px solid var(--fg); border-radius: 50%;
+    display: grid; place-items: center; padding-left: 4px; font-size: 18px;
+    background: rgb(var(--bg-rgb) / .55); transition: transform .25s ease, border-color .25s ease;
+  }
+  #gate .slide:hover .play, #gate .slide:focus-visible .play { transform: scale(1.08); border-color: var(--signal); }
+  #gate a.slide { border: 0; padding: 18px; text-transform: none; letter-spacing: normal; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 8px; text-align: left; }
+  #gate a.slide::before { content: ""; position: absolute; inset: 0; background: linear-gradient(0deg, rgb(var(--bg-rgb) / .9), rgb(var(--bg-rgb) / .15) 70%); }
+  #gate a.slide > * { position: relative; }
+  #gate .slide .badge { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--signal); }
+  #gate .slide .cap { font-family: var(--display); font-weight: 500; font-size: clamp(16px, 4vw, 20px); line-height: 1.35; }
+  #gate .slide .cta { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
+  #gate .slide.empty { cursor: default; padding: 24px; text-align: center; font-family: var(--display); font-weight: 500; font-size: 16px; line-height: 1.5; color: var(--dim); }
+  .reel-bar { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .reel-title { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: center; font-size: 12px; letter-spacing: .08em; color: var(--dim); }
+  .reel-count { font-size: 12px; letter-spacing: .12em; color: var(--dim); font-variant-numeric: tabular-nums; }
+  #gate .reel-btn { width: 38px; height: 38px; border: 1px solid var(--line); display: grid; place-items: center; color: var(--fg); font-size: 15px; }
+  #gate .reel-btn:hover, #gate .reel-btn:focus-visible { border-color: var(--signal); color: var(--signal); }
+  .reel-bar.single .reel-btn { visibility: hidden; }
+  @keyframes slideIn { from { opacity: 0; } to { opacity: 1; } }
+  @media (prefers-reduced-motion: reduce) { #gate .slide { animation: none; } }
+
   /* Hover description. Desktop and other hover devices only; phones show it on the opened page. */
   #tip {
     position: fixed; z-index: 3; left: 0; top: 0; width: max-content; max-width: min(21rem, calc(100vw - 32px));
@@ -198,8 +233,18 @@
   <div class="g-coords" id="gCoords"></div>
   <p class="g-desc" id="gDesc"></p>
   <div class="g-soon" id="gSoon" hidden>Coming soon</div>
+  <div class="g-feed" id="gFeed" hidden role="group" aria-roledescription="carousel" aria-label="Latest videos">
+    <div id="frame"></div>
+    <div class="reel-bar">
+      <button class="reel-btn" id="reelPrev" type="button" aria-label="Previous">←</button>
+      <span class="reel-title" id="reelTitle"></span>
+      <span class="reel-count" id="reelCount"></span>
+      <button class="reel-btn" id="reelNext" type="button" aria-label="Next">→</button>
+    </div>
+  </div>
   <div class="g-actions">
     <a id="gLink" href="#" target="_blank" rel="noopener" hidden>Open →</a>
+    <span class="g-buttons" id="gButtons"></span>
     <button id="gBack" type="button">← Return</button>
   </div>
 </div>
@@ -210,6 +255,7 @@
    label: text on the page      url: where it goes ("" shows the soon message instead)
    place: shown while hovering  lat / lon: where the atlas and globe fly to
    desc:  one sentence shown on hover (and on the page a tap opens on phones)
+   feed / buttons: opens a carousel page with one button per entry in buttons (see FEED below)
    ============================================================ */
 const HOME = { lat: 32.82, lon: 35.50 };
 
@@ -225,7 +271,12 @@ const LINKS = [
   { label: "Jesus People SF", url: "https://jesuspeoplesf.com/", place: "San Francisco", lat: 37.77, lon: -122.42,
     desc: "A San Francisco church plant reaching the Haight-Ashbury neighborhood, with online preaching and pastoral counsel." },
   { label: "Run 1000 Hills", url: "https://www.youtube.com/@run1000hills", place: "Kigali, Rwanda", lat: -1.95, lon: 30.06,
-    desc: "Videos from around the world: Rwanda, San Francisco and the Holy Land." },
+    desc: "Videos from around the world: Rwanda, San Francisco and the Holy Land.",
+    feed: true,
+    buttons: [
+      { text: "YouTube",   url: "https://www.youtube.com/@run1000hills" },
+      { text: "Instagram", url: "https://www.instagram.com/run1000hills/" }
+    ] },
   { label: "Bible Lands by Drone", url: "", place: "Bible Lands", lat: 31.90, lon: 35.20,
     desc: "A coming YouTube channel of biblical ASMR drone footage, set to worship music in Hebrew and Arabic." }
 ];
@@ -241,6 +292,19 @@ const PLACES = [
 ];
 
 const ABOUT = "Architect and filmmaker living near the Sea of Galilee. Raised between Redding, California and Kigali, Rwanda, and trained in architecture at Virginia Tech. I make films, build things, and try to bring people and places closer together.";
+
+/* Run 1000 Hills carousel.
+   YouTube: videos.json is refreshed every day by the GitHub Action in .github/workflows, so it needs no editing.
+   Instagram: paste reel links here when you want to feature them. Optional thumb is an image you upload
+   next to index.html (for example "reels/1.jpg"). Without a thumb the slide shows the caption. */
+const FEED = {
+  videosUrl: "videos.json",
+  maxYouTube: 6,
+  advanceMs: 5000,
+  instagram: [
+    /* { url: "https://www.instagram.com/reel/XXXXXXXXXXX/", caption: "Short caption", thumb: "" }, */
+  ]
+};
 
 /* Optional short audio note. Put a file URL in src to show the control. */
 const NOTE = { src: "", label: "A note from Mike", length: "01:12" };
@@ -474,12 +538,100 @@ function showTip(a, l) {
 }
 function hideTip() { tip.classList.remove("on"); }
 function setHome() { hideTip(); coordsEl.textContent = fmt(HOME.lat, HOME.lon); fly(HOME.lat, HOME.lon, IDLE_SPAN); }
-function setPlace(l, a) { coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); showTip(a, l); }
+function setPlace(l, a) { coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); showTip(a, l); if (l.feed) loadFeed(); }
 setHome();
 nav.addEventListener("mouseover", e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
 nav.addEventListener("focusin",   e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
 nav.addEventListener("mouseleave", setHome);
 nav.addEventListener("focusout", e => { if (!nav.contains(e.relatedTarget)) setHome(); });
+
+/* ---------- Run 1000 Hills carousel ---------- */
+const feed = { slides: [], i: 0, timer: null, playing: false, hover: false, gen: 0, ready: null };
+function loadFeed() {
+  if (feed.ready) return feed.ready;
+  feed.ready = fetch(FEED.videosUrl, { cache: "no-cache" })
+    .then(r => r.ok ? r.json() : [])
+    .catch(() => [])
+    .then(list => {
+      const yt = (Array.isArray(list) ? list : []).filter(v => v && /^[\w-]{11}$/.test(v.id)).slice(0, FEED.maxYouTube);
+      const ig = (FEED.instagram || []).filter(x => x && x.url);
+      const out = [];
+      for (let k = 0; k < Math.max(yt.length, ig.length); k++) {
+        if (yt[k]) out.push({ type: "yt", id: yt[k].id, title: yt[k].title || "" });
+        if (ig[k]) out.push({ type: "ig", url: ig[k].url, caption: ig[k].caption || "", thumb: ig[k].thumb || "" });
+      }
+      feed.slides = out;
+      return out;
+    });
+  return feed.ready;
+}
+function el(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text) n.textContent = text; return n; }
+function renderSlide() {
+  const frame = $("frame"), n = feed.slides.length, s = feed.slides[feed.i];
+  frame.textContent = ""; feed.playing = false;
+  $("gFeed").querySelector(".reel-bar").classList.toggle("single", n < 2);
+  if (!s) {
+    frame.appendChild(el("div", "slide empty", "Watch the latest on YouTube or Instagram with the buttons below."));
+    $("reelTitle").textContent = ""; $("reelCount").textContent = "";
+    return;
+  }
+  if (s.type === "yt") {
+    const b = el("button", "slide"); b.type = "button";
+    b.style.backgroundImage = 'url("https://i.ytimg.com/vi/' + s.id + '/hqdefault.jpg")';
+    b.setAttribute("aria-label", "Play " + (s.title || "video"));
+    b.appendChild(el("span", "play", "▶")).setAttribute("aria-hidden", "true");
+    b.addEventListener("click", () => playYT(s));
+    frame.appendChild(b);
+  } else {
+    const a = el("a", "slide"); a.href = s.url; a.target = "_blank"; a.rel = "noopener";
+    if (s.thumb) a.style.backgroundImage = 'url("' + String(s.thumb).replace(/"/g, "%22") + '")';
+    a.appendChild(el("span", "badge", "Instagram · Reel"));
+    if (s.caption) a.appendChild(el("span", "cap", s.caption));
+    a.appendChild(el("span", "cta", "Watch on Instagram →"));
+    frame.appendChild(a);
+  }
+  $("reelTitle").textContent = s.type === "yt" ? s.title : (s.caption || "Reel on Instagram");
+  $("reelCount").textContent = (feed.i + 1) + " / " + n;
+}
+function playYT(s) {
+  const f = document.createElement("iframe");
+  f.src = "https://www.youtube-nocookie.com/embed/" + s.id + "?autoplay=1&mute=1&playsinline=1&rel=0";
+  f.title = s.title || "Video";
+  f.allow = "autoplay; encrypted-media; picture-in-picture; fullscreen";
+  f.allowFullscreen = true;
+  $("frame").textContent = ""; $("frame").appendChild(f);
+  feed.playing = true;
+}
+function goSlide(d) {
+  const n = feed.slides.length; if (n < 2) return;
+  feed.i = (feed.i + d + n) % n; renderSlide(); startTimer();
+}
+function startTimer() {
+  clearInterval(feed.timer); feed.timer = null;
+  if (reduce || feed.slides.length < 2) return;
+  feed.timer = setInterval(() => { if (!feed.playing && !feed.hover && !document.hidden) goSlide(1); }, FEED.advanceMs);
+}
+function startFeed() {
+  const g = ++feed.gen;
+  $("frame").textContent = ""; $("reelTitle").textContent = "Loading the latest…"; $("reelCount").textContent = "";
+  loadFeed().then(() => { if (feed.gen !== g || gate.hidden) return; feed.i = 0; renderSlide(); startTimer(); });
+}
+function stopFeed() { feed.gen++; clearInterval(feed.timer); feed.timer = null; feed.playing = false; $("frame").textContent = ""; }
+$("reelPrev").addEventListener("click", () => goSlide(-1));
+$("reelNext").addEventListener("click", () => goSlide(1));
+$("gFeed").addEventListener("mouseenter", () => { feed.hover = true; });
+$("gFeed").addEventListener("mouseleave", () => { feed.hover = false; });
+let swipeX = null;
+$("frame").addEventListener("touchstart", e => { swipeX = e.touches[0].clientX; }, { passive: true });
+$("frame").addEventListener("touchend", e => {
+  if (swipeX === null || feed.playing) return;
+  const dx = e.changedTouches[0].clientX - swipeX; swipeX = null;
+  if (Math.abs(dx) > 45) goSlide(dx < 0 ? 1 : -1);
+});
+window.addEventListener("keydown", e => {
+  if (gate.hidden || $("gFeed").hidden) return;
+  if (e.key === "ArrowRight") goSlide(1); else if (e.key === "ArrowLeft") goSlide(-1);
+});
 
 /* ---------- Select: dive, then hand off ---------- */
 const gate = $("gate");
@@ -490,20 +642,28 @@ function leave(l) {
   $("gCoords").textContent = fmt(l.lat, l.lon);
   const link = $("gLink");
   $("gDesc").textContent = l.desc || "";
-  if (l.url) { link.href = l.url; link.textContent = "Open " + l.label + " →"; link.hidden = false; $("gSoon").hidden = true; }
-  else { link.hidden = true; $("gSoon").hidden = false; }
+  const btns = $("gButtons"); btns.textContent = "";
+  if (l.feed) {
+    link.hidden = true; $("gSoon").hidden = true; $("gFeed").hidden = false;
+    (l.buttons || []).forEach(b => { const a = el("a", "", b.text + " →"); a.href = b.url; a.target = "_blank"; a.rel = "noopener"; btns.appendChild(a); });
+    startFeed();
+  } else {
+    $("gFeed").hidden = true; stopFeed();
+    if (l.url) { link.href = l.url; link.textContent = "Open " + l.label + " →"; link.hidden = false; $("gSoon").hidden = true; }
+    else { link.hidden = true; $("gSoon").hidden = false; }
+  }
   hideTip();
   document.body.classList.add("leaving");
   fly(l.lat, l.lon, .8);
   gate.hidden = false;
   later(() => gate.classList.add("on"), reduce ? 0 : 650);
   /* Phones stay on this page so the description can be read. Tap Open to continue. */
-  if (l.url && canHover) later(() => { try { link.click(); } catch (e) {} }, reduce ? 150 : 2600);
-  later(() => { (l.url ? link : $("gBack")).focus({ preventScroll: true }); }, reduce ? 50 : 1300);
+  if (l.url && canHover && !l.feed) later(() => { try { link.click(); } catch (e) {} }, reduce ? 150 : 2600);
+  later(() => { (l.feed ? btns.querySelector("a") : (l.url ? link : $("gBack"))).focus({ preventScroll: true }); }, reduce ? 50 : 1300);
 }
 function back() {
   timers.forEach(clearTimeout); timers = [];
-  gate.classList.remove("on"); gate.hidden = true;
+  gate.classList.remove("on"); gate.hidden = true; stopFeed(); $("gFeed").hidden = true;
   document.body.classList.remove("leaving");
   setHome();
 }
