@@ -176,9 +176,35 @@
   @keyframes slideIn { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { #gate .slide { animation: none; } }
 
+  /* Name button and bio popup */
+  .who {
+    appearance: none; background: none; border: 0; padding: 0; margin: 0; color: inherit; font: inherit; text-align: left;
+    display: flex; flex-direction: column; align-items: flex-start; gap: .35em; cursor: help;
+  }
+  .who:focus-visible { outline: 1px dotted var(--signal); outline-offset: 8px; }
+  .who-mark {
+    display: inline-grid; place-items: center; width: 1.7em; height: 1.7em; margin-left: .6rem; position: relative; top: .5rem;
+    border: 1px solid var(--line); border-radius: 50%; color: var(--dim);
+    font: 400 12px/1 var(--mono); letter-spacing: 0; text-transform: none; vertical-align: top;
+    transition: color .25s ease, border-color .25s ease;
+  }
+  .who:hover .who-mark, .who:focus-visible .who-mark, .who[aria-expanded="true"] .who-mark { color: var(--signal); border-color: var(--signal); }
+  h1 { align-items: flex-start; }
+  #bio {
+    box-sizing: border-box; position: fixed; z-index: 4; left: 0; top: 0; width: max-content; max-width: min(25rem, calc(100vw - 32px));
+    padding: 16px 18px; background: rgb(var(--bg-rgb) / .96); border: 1px solid var(--line);
+    font-family: var(--display); font-weight: 500; font-size: 16px; line-height: 1.55; color: var(--fg);
+    opacity: 0; transform: translateY(4px); pointer-events: none;
+    transition: opacity .2s ease, transform .25s cubic-bezier(.2,.7,.2,1);
+  }
+  #bio p { margin: 0; text-wrap: pretty; }
+  #bio.on { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { #bio, .who-mark { transition: none; } }
+  @media (max-width: 440px) { #bio { font-size: 15px; padding: 14px 16px; } }
+
   /* Hover description. Desktop and other hover devices only; phones show it on the opened page. */
   #tip {
-    position: fixed; z-index: 3; left: 0; top: 0; width: max-content; max-width: min(21rem, calc(100vw - 32px));
+    box-sizing: border-box; position: fixed; z-index: 3; left: 0; top: 0; width: max-content; max-width: min(21rem, calc(100vw - 32px));
     padding: 12px 14px; background: rgb(var(--bg-rgb) / .95); border: 1px solid var(--line);
     font-family: var(--display); font-weight: 500; font-size: 15px; line-height: 1.45; color: var(--fg); text-wrap: pretty;
     opacity: 0; transform: translateY(4px); pointer-events: none;
@@ -210,7 +236,7 @@
 
 <main class="stage" id="stage">
   <header>
-    <h1><span class="first">Michael</span> <span class="last">Folta</span></h1>
+    <h1><button class="who" id="who" type="button" aria-expanded="false" aria-controls="bio"><span class="first">Michael</span><span class="last">Folta<span class="who-mark" aria-hidden="true">?</span></span></button></h1>
     <p class="coords" id="coords" aria-live="polite"></p>
     <p class="role">Architect · Filmmaker · Bridge Builder</p>
   </header>
@@ -218,15 +244,12 @@
   <nav id="links" aria-label="Projects"></nav>
 
   <footer>
-    <button class="ghost" id="aboutBtn" type="button" aria-expanded="false" aria-controls="about">About +</button>
     <button class="ghost" id="noteBtn" type="button" hidden></button>
-    <section id="about" hidden>
-      <p id="aboutText"></p>
-    </section>
   </footer>
 </main>
 
 <div id="tip" role="tooltip" aria-hidden="true"></div>
+<div id="bio" role="tooltip"><p id="bioText"></p></div>
 
 <div id="gate" hidden role="dialog" aria-label="Opening project">
   <div class="g-label" id="gLabel"></div>
@@ -291,7 +314,7 @@ const PLACES = [
   { lat: 36.08,  lon: -84.66,  kind: "site" }    /* Lancing, TN */
 ];
 
-const ABOUT = "Architect and filmmaker living near the Sea of Galilee. Raised between Redding, California and Kigali, Rwanda, and trained in architecture at Virginia Tech. I make films, build things, and try to bring people and places closer together.";
+const BIO = "I'm Michael, an architect and filmmaker living by the Sea of Galilee. I grew up in Redding, California and Kigali, Rwanda, and studied architecture at Virginia Tech. Today I film pilgrim groups, churches and communities across the Holy Land, and I'm planning to build a mountain retreat in East Tennessee.";
 
 /* Run 1000 Hills carousel.
    YouTube: videos.json is refreshed every day by the GitHub Action in .github/workflows, so it needs no editing.
@@ -323,6 +346,28 @@ function fmt(lat, lon) {
 }
 function wrap180(d) { return ((d + 540) % 360 + 360) % 360 - 180; }
 
+/* ---------- Bio popup (hover on desktop, tap on phones) ---------- */
+const who = $("who"), bio = $("bio");
+$("bioText").textContent = BIO;
+const canHoverBio = window.matchMedia("(hover: hover)").matches;
+function showBio() {
+  const r = who.getBoundingClientRect(), bw = bio.offsetWidth, bh = bio.offsetHeight;
+  let x = r.right + 24, y = r.top + 8;
+  if (x + bw > window.innerWidth - 16) { x = 16; y = who.closest("header").getBoundingClientRect().bottom + 12; }
+  y = Math.max(12, Math.min(y, window.innerHeight - bh - 12));
+  bio.style.left = Math.round(x) + "px"; bio.style.top = Math.round(y) + "px";
+  bio.classList.add("on"); who.setAttribute("aria-expanded", "true");
+}
+function hideBio() { bio.classList.remove("on"); who.setAttribute("aria-expanded", "false"); }
+if (canHoverBio) {
+  who.addEventListener("mouseenter", showBio); who.addEventListener("mouseleave", hideBio);
+  who.addEventListener("focus", showBio); who.addEventListener("blur", hideBio);
+} else {
+  who.addEventListener("click", e => { e.stopPropagation(); bio.classList.contains("on") ? hideBio() : showBio(); });
+  document.addEventListener("click", () => hideBio());
+}
+window.addEventListener("keydown", e => { if (e.key === "Escape") hideBio(); });
+
 /* ---------- Links ---------- */
 const nav = $("links");
 LINKS.forEach((l, i) => {
@@ -335,14 +380,7 @@ LINKS.forEach((l, i) => {
   nav.appendChild(a);
 });
 
-/* ---------- About + note ---------- */
-$("aboutText").textContent = ABOUT;
-$("aboutBtn").addEventListener("click", () => {
-  const open = $("about").hidden;
-  $("about").hidden = !open;
-  $("aboutBtn").setAttribute("aria-expanded", String(open));
-  $("aboutBtn").textContent = open ? "About −" : "About +";
-});
+/* ---------- Audio note ---------- */
 if (NOTE.src) {
   const nb = $("noteBtn"), audio = new Audio(NOTE.src);
   const idle = NOTE.label + " · " + NOTE.length;
@@ -538,7 +576,7 @@ function showTip(a, l) {
 }
 function hideTip() { tip.classList.remove("on"); }
 function setHome() { hideTip(); coordsEl.textContent = fmt(HOME.lat, HOME.lon); fly(HOME.lat, HOME.lon, IDLE_SPAN); }
-function setPlace(l, a) { coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); showTip(a, l); if (l.feed) loadFeed(); }
+function setPlace(l, a) { hideBio(); coordsEl.textContent = l.place + " · " + fmt(l.lat, l.lon); fly(l.lat, l.lon, NEAR_SPAN); showTip(a, l); if (l.feed) loadFeed(); }
 setHome();
 nav.addEventListener("mouseover", e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
 nav.addEventListener("focusin",   e => { const a = e.target.closest(".node"); if (a) setPlace(LINKS[a.dataset.i], a); });
@@ -652,7 +690,7 @@ function leave(l) {
     if (l.url) { link.href = l.url; link.textContent = "Open " + l.label + " →"; link.hidden = false; $("gSoon").hidden = true; }
     else { link.hidden = true; $("gSoon").hidden = false; }
   }
-  hideTip();
+  hideTip(); hideBio();
   document.body.classList.add("leaving");
   fly(l.lat, l.lon, .8);
   gate.hidden = false;
