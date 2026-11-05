@@ -209,10 +209,11 @@
   #gate .vtab { padding: 8px 2px; border-bottom: 1px solid transparent; color: var(--dim); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; }
   #gate .vtab:hover, #gate .vtab:focus-visible { color: var(--fg); }
   #gate .vtab[aria-selected="true"] { color: var(--fg); border-bottom-color: var(--signal); }
-  #vFrame { height: clamp(260px, calc(100dvh - 400px), 620px); border: 1px solid var(--line); background: #0d0f12; }
+  #gate.viewer .g-desc { display: none; }
+  #vFrame { height: clamp(300px, calc(100dvh - 290px), 760px); border: 1px solid var(--line); background: #0d0f12; }
   #vFrame iframe { display: block; width: 100%; height: 100%; border: 0; }
   #gate a.vopen { justify-self: center; border: 0; padding: 4px 0; color: var(--dim); font-size: 11px; letter-spacing: .14em; }
-  @media (max-width: 440px) { #vFrame { height: 52dvh; } }
+  @media (max-width: 440px) { #vFrame { height: 62dvh; } }
 
   /* Hover description. Desktop and other hover devices only; phones show it on the opened page. */
   #tip {
@@ -280,7 +281,7 @@
   <div class="g-view" id="gView" hidden>
     <div id="vTabs" role="tablist" aria-label="Thesis documents"></div>
     <div id="vFrame"></div>
-    <a class="vopen" id="vOpen" href="#" target="_blank" rel="noopener">Open this document on Issuu ↗</a>
+    <a class="vopen" id="vOpen" href="#" target="_blank" rel="noopener">Open this document ↗</a>
   </div>
   <div class="g-actions">
     <a id="gLink" href="#" target="_blank" rel="noopener" hidden>Open →</a>
@@ -296,7 +297,7 @@
    place: shown while hovering  lat / lon: where the atlas and globe fly to
    desc:  one sentence shown on hover (and on the page a tap opens on phones)
    feed / buttons: opens a carousel page with one button per entry in buttons (see FEED below)
-   viewer: opens tabs of Issuu documents (user + each document's name from its Issuu address), then buttons
+   viewer: opens tabs of documents, then buttons. Each doc is { label, drive: Google Drive file ID } or { label, d: Issuu name } with user: "issuu-username"
    ============================================================ */
 const HOME = { lat: 32.82, lon: 35.50 };
 
@@ -308,12 +309,9 @@ const LINKS = [
   { label: "Architecture", url: "https://bio.site/recovery", place: "Lancing, Tennessee", lat: 36.08, lon: -84.66,
     desc: "Rest. Recover. Renew., a retreat center planned for 135 acres in East Tennessee, grown out of a 2023 Virginia Tech thesis.",
     viewer: {
-      user: "run1000hills",
       docs: [
-        { label: "Concepts", d: "b.arch_thesis_concepts_6c03052f675063" },
-        { label: "Site",     d: "b.arch_thesis_site" },
-        { label: "Models",   d: "b.arch_thesis_models" },
-        { label: "Drawings", d: "michael_folta_b.arch_thesis_drawings" }
+        { label: "Booklet",  drive: "1lZv_wtfTN3d-R_bAPzjfMEjIsaaDdv62" },
+        { label: "Drawings", drive: "1T9CZJWvwhGeuYEmZ6peFpgX_nlzDERDB" }
       ]
     },
     buttons: [ { text: "Project page", url: "https://bio.site/recovery" } ] },
@@ -707,10 +705,18 @@ function selectDoc(i) {
   const doc = viewCfg.docs[viewI];
   [...$("vTabs").children].forEach((b, k) => { b.setAttribute("aria-selected", String(k === viewI)); b.tabIndex = k === viewI ? 0 : -1; });
   const f = document.createElement("iframe");
-  f.src = "https://e.issuu.com/embed.html?d=" + encodeURIComponent(doc.d) + "&u=" + encodeURIComponent(viewCfg.user);
+  const open = $("vOpen");
+  if (doc.drive) {
+    f.src = "https://drive.google.com/file/d/" + encodeURIComponent(doc.drive) + "/preview";
+    open.href = "https://drive.google.com/file/d/" + encodeURIComponent(doc.drive) + "/view";
+    open.textContent = "Open this document in Google Drive ↗";
+  } else {
+    f.src = "https://e.issuu.com/embed.html?d=" + encodeURIComponent(doc.d) + "&u=" + encodeURIComponent(viewCfg.user);
+    open.href = "https://issuu.com/" + encodeURIComponent(viewCfg.user) + "/docs/" + encodeURIComponent(doc.d);
+    open.textContent = "Open this document on Issuu ↗";
+  }
   f.title = "Thesis: " + doc.label; f.allow = "fullscreen"; f.allowFullscreen = true;
   $("vFrame").textContent = ""; $("vFrame").appendChild(f);
-  $("vOpen").href = "https://issuu.com/" + encodeURIComponent(viewCfg.user) + "/docs/" + encodeURIComponent(doc.d);
 }
 function buildView(v) {
   viewCfg = v; const tabs = $("vTabs"); tabs.textContent = "";
