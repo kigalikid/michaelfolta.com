@@ -75,7 +75,7 @@
     <div class="len">3 min · sound on</div>
   </div>
 </div>
-<audio id="aud" preload="auto"><source src="story.mp3" type="audio/mpeg"><source src="story.m4a" type="audio/mp4"><source src="story.webm" type="audio/webm"></audio>
+<audio id="aud" preload="auto" playsinline><source src="my-story.mp4?v=3" type="video/mp4"><source src="story.m4a?v=3" type="audio/mp4"><source src="story.mp3?v=3" type="audio/mpeg"></audio>
 
 <script>
 /* =====================================================================
@@ -86,42 +86,42 @@
    then adjust each scene's dur to match how long you take on it.
    ===================================================================== */
 const SCENES = [
-  { dur: 10, big: "Nov 8, 2019", art: "ecg", cam: { lat: 37.77, lon: -122.42, span: 20 }, marks: [[37.77, -122.42]],
+  { dur: 11.96, big: "Nov 8, 2019", art: "ecg", cam: { lat: 37.77, lon: -122.42, span: 20 }, marks: [[37.77, -122.42]],
     text: "On November 8th, 2019, I was in an accident in San Francisco. I woke up in the hospital after ten days in a coma." },
-  { dur: 12, big: "2023", art: "finder", fly: 4.5, cam: { lat: 32.84, lon: 35.52, span: 7 }, marks: [[32.84, 35.52]],
+  { dur: 14.22, big: "2023", art: "finder", fly: 4.5, cam: { lat: 32.84, lon: 35.52, span: 7 }, marks: [[32.84, 35.52]],
     text: "Four years later, I was standing beside the Sea of Galilee with a camera, filming the land I'd dreamed about since I was fifteen. This is how I got from one to the other." },
 
-  { dur: 7.5, big: "Redding", art: "church", cam: { lat: 40.59, lon: -122.39, span: 14 }, marks: [[40.59, -122.39]],
+  { dur: 8.4, big: "Redding", art: "church", cam: { lat: 40.59, lon: -122.39, span: 14 }, marks: [[40.59, -122.39]],
     text: "I was born in Tucson and grew up in Redding, California, in a church where people expected miracles." },
-  { dur: 7.5, big: "Rwanda · 15", cam: { lat: -1.95, lon: 30.06, span: 22 }, marks: [[-1.95, 30.06]], fly: 3.2,
+  { dur: 10.22, big: "Rwanda · 15", cam: { lat: -1.95, lon: 30.06, span: 22 }, marks: [[-1.95, 30.06]], fly: 3.2,
     text: "At fifteen, my family moved to Rwanda. We were homeschooled and free, and always on the move." },
-  { dur: 14, big: "3½ weeks", cam: { lat: 31.3, lon: 35.2, span: 5.2 }, marks: [[32.83, 35.52], [31.78, 35.22], [29.56, 34.95], [30.33, 35.44]], fly: 3.4,
+  { dur: 16.6, big: "3½ weeks", cam: { lat: 31.3, lon: 35.2, span: 5.2 }, marks: [[32.83, 35.52], [31.78, 35.22], [29.56, 34.95], [30.33, 35.44]], fly: 3.4,
     route: [[32.83, 35.52], [31.78, 35.22], [30.61, 34.80], [29.56, 34.95], [30.33, 35.44]],
     text: "That same year, we took a trip to Israel. Three and a half weeks. The Galilee, Jerusalem, the desert, all the way down to Petra. And I made a promise to myself: I'm coming back." },
 
-  { dur: 9, big: "2015", art: "building", cam: { lat: 37.23, lon: -80.42, span: 10 }, marks: [[37.23, -80.42]], fly: 3,
+  { dur: 11.37, big: "2015", art: "building", cam: { lat: 37.23, lon: -80.42, span: 10 }, marks: [[37.23, -80.42]], fly: 3,
     text: "I went to Virginia Tech to study architecture. I led Bible studies. I started filming buildings, and people started asking me to film theirs." },
-  { dur: 9, big: "San Francisco", art: "bridge", cam: { lat: 37.77, lon: -122.42, span: 12 }, marks: [[37.77, -122.42]], fly: 3.2,
+  { dur: 10.44, big: "San Francisco", art: "bridge", cam: { lat: 37.77, lon: -122.42, span: 12 }, marks: [[37.77, -122.42]], fly: 3.2,
     text: "Then I moved to San Francisco and started freelancing as a filmmaker. It was working. For the first time, I could see a future." },
 
-  { dur: 13, big: "2020", art: "skyline", cam: { lat: 20, lon: -40, span: 170 }, mapA: .5, fly: 3.6,
+  { dur: 14.9, big: "2020", art: "skyline", cam: { lat: 20, lon: -40, span: 170 }, mapA: .5, fly: 3.6,
     text: "Then, the accident. Ten days in a coma. Months of rehab. And before I was well, COVID sent the world home. I wanted my old life back, but the world went crazy." },
-  { dur: 12, big: "The van", art: "van", cam: { lat: 38, lon: -99, span: 60 }, marks: [[37.23, -80.42], [36.97, -122.03]], fly: 3.2,
+  { dur: 13.75, big: "The van", art: "van", cam: { lat: 38, lon: -99, span: 60 }, marks: [[37.23, -80.42], [36.97, -122.03]], fly: 3.2,
     route: [[37.23, -80.42], [38.5, -98], [36.97, -122.03]],
     text: "I converted an old van to finish my thesis on the road. The engine died. So did a lot of other things. I came home with nothing to show for it." },
 
-  { dur: 9, big: "2022", art: "saw", cam: { lat: 37.23, lon: -80.42, span: 10 }, marks: [[37.23, -80.42]], fly: 3,
+  { dur: 10.21, big: "2022", art: "saw", cam: { lat: 37.23, lon: -80.42, span: 10 }, marks: [[37.23, -80.42]], fly: 3,
     text: "I spent the next year picking myself up. Construction. A sawmill. A farm. Framing a house." },
-  { dur: 13, big: "B.Arch · 2023", art: "site", cam: { lat: 36.08, lon: -84.66, span: 6 }, marks: [[36.08, -84.66]], fly: 3,
+  { dur: 16.94, big: "B.Arch · 2023", art: "site", cam: { lat: 36.08, lon: -84.66, span: 6 }, marks: [[36.08, -84.66]], fly: 3,
     text: "Then I finished school, with a retreat center on my mom's land in Tennessee as my thesis. The Bible says God uses the wilderness to form people. I didn't believe that then. I do now." },
 
-  { dur: 10, big: "2023", cam: { lat: 32.84, lon: 35.52, span: 7 }, marks: [[32.84, 35.52]], fly: 4,
+  { dur: 11.58, big: "2023", cam: { lat: 32.84, lon: 35.52, span: 7 }, marks: [[32.84, 35.52]], fly: 4,
     text: "In 2023, I finally came back to Israel. I'd waited twelve years. I came to volunteer for three months. Then the war began, and I flew home." },
-  { dur: 11, big: "One way", art: "mail", cam: { lat: 36, lon: -22, span: 150 }, marks: [[37.23, -80.42], [32.84, 35.52]], fly: 3.4,
+  { dur: 13.2, big: "One way", art: "mail", cam: { lat: 36, lon: -22, span: 150 }, marks: [[37.23, -80.42], [32.84, 35.52]], fly: 3.4,
     route: [[37.23, -80.42], [32.84, 35.52]], arc: true,
     text: "A year later, I tried to return on my own. Because of the war with Iran, my flight got canceled. Then Magdala invited me." },
 
-  { dur: 18, big: "Today", art: "finder", cam: { lat: 32.84, lon: 35.52, span: 5 }, marks: [[32.84, 35.52]], fly: 4, end: true,
+  { dur: 18.14, big: "Today", art: "finder", cam: { lat: 32.84, lon: 35.52, span: 5 }, marks: [[32.84, 35.52]], fly: 4, end: true,
     text: "I live by the Sea of Galilee. I film pilgrims, churches and communities across the Holy Land. That's the short version. The long version is the one worth hearing." }
 ];
 
@@ -141,7 +141,7 @@ const wrap180 = d => ((d + 540) % 360) - 180;
 const mono = "11px 'IBM Plex Mono', ui-monospace, Menlo, monospace";
 
 /* Scene lengths are scaled so the whole film is exactly TARGET seconds. Change TARGET to make it longer or shorter. */
-const TARGET = 180; /* total length in seconds */
+const TARGET = 181.93; /* total length in seconds */
 const PACE = TARGET / SCENES.reduce((a, s) => a + s.dur, 0);
 let t0 = 0;
 for (const s of SCENES) { s.dur *= PACE; s.start = t0; t0 += s.dur; s.fly = s.fly || 2.4; }
@@ -373,10 +373,11 @@ function overlays(i, u) {
   elBig.style.opacity = clamp(u / .5) * (s.end ? 1 : clamp((s.dur - u) / .4));
   elCoords.style.opacity = elBig.style.opacity;
   elCap.style.opacity = clamp((u - .35) / .5) * (s.end ? 1 : clamp((s.dur - u) / .4));
-  elEnd.style.opacity = s.end ? clamp((u - 9) / 1.2) : 0;
-  elEnd.style.pointerEvents = s.end && u > 9.5 ? "auto" : "none";
-  if (s.end) elCap.style.opacity = clamp((u - .35) / .5) * (1 - clamp((u - 8) / .8));
-  if (s.end) { elBig.style.opacity = clamp(u / .5) * (1 - clamp((u - 8) / .8)); elCoords.style.opacity = elBig.style.opacity; }
+  const endAt = s.dur - 5;
+  elEnd.style.opacity = s.end ? clamp((u - endAt) / 1.2) : 0;
+  elEnd.style.pointerEvents = s.end && u > endAt + .5 ? "auto" : "none";
+  if (s.end) elCap.style.opacity = clamp((u - .35) / .5) * (1 - clamp((u - endAt + 1) / .8));
+  if (s.end) { elBig.style.opacity = clamp(u / .5) * (1 - clamp((u - endAt + 1) / .8)); elCoords.style.opacity = elBig.style.opacity; }
 }
 
 /* ---------- main draw (pure function of time) ---------- */
@@ -391,10 +392,10 @@ function draw() {
     return;
   }
   const i = sceneAt(T), s = SCENES[i], u = T - s.start;
-  drawMap(camAt(i, u), s, u, T);
+  drawMap(camAt(i, u), (s.end && u > s.dur - 6) ? { ...s, marks: [] } : s, u, T);
   if (s.art) {
     const a = Math.min(clamp(u / .6), clamp((s.dur - u) / .5)) * (s.end ? 1 : 1);
-    ctx.save(); ctx.translate(W / 2, H * (s.art === "finder" ? .5 : .42)); if (s.art === "site") ctx.scale(.8, .8); ctx.globalAlpha = s.end ? clamp(u / .6) * (1 - clamp((u - 8) / .8)) : a; drawArt(s.art, u, s.dur, T); ctx.restore();
+    ctx.save(); ctx.translate(W / 2, H * (s.art === "finder" ? .5 : .42)); if (s.art === "site") ctx.scale(.8, .8); ctx.globalAlpha = s.end ? clamp(u / .6) * (1 - clamp((u - (s.dur - 6)) / .8)) : a; drawArt(s.art, u, s.dur, T); ctx.restore();
   }
   /* bottom vignette so captions read */
   const g = ctx.createLinearGradient(0, H * .62, 0, H); g.addColorStop(0, "rgba(7,8,10,0)"); g.addColorStop(1, "rgba(7,8,10,.88)");
@@ -421,10 +422,12 @@ function loop(ts) {
 }
 function start() {
   $("poster").hidden = true; mode = "film"; T = 0; playing = true;
-  try { aud.currentTime = 0; if (audioOK) aud.play().catch(() => { }); } catch (e) { }
+  try { aud.currentTime = 0; } catch (e) { }
+  /* start the sound from the tap itself (phones require this); the film follows the audio clock once it plays */
+  try { const pr = aud.play(); if (pr && pr.then) pr.then(() => { audioOK = true; }).catch(() => { audioOK = false; }); } catch (e) { }
 }
 function pause(end) { playing = false; try { aud.pause(); } catch (e) { } }
-function resume() { playing = true; if (audioOK) { try { aud.currentTime = T; aud.play().catch(() => { }); } catch (e) { } } }
+function resume() { playing = true; try { aud.currentTime = T; const pr = aud.play(); if (pr && pr.then) pr.then(() => { audioOK = true; }).catch(() => { }); } catch (e) { } }
 function seek(t) { T = clamp(t, 0, TOTAL - .01); if (audioOK) try { aud.currentTime = T; } catch (e) { } }
 $("playBtn").addEventListener("click", e => { e.stopPropagation(); start(); });
 $("again").addEventListener("click", e => { e.stopPropagation(); start(); });
