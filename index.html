@@ -61,7 +61,7 @@
   .legend { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--dim); display: flex; gap: 14px; }
 
   .stage {
-    position: relative; z-index: 1; height: 100%;
+    position: relative; z-index: 1; height: 100%; box-sizing: border-box;
     display: grid; grid-template-rows: auto 1fr auto;
     padding-block: clamp(20px, 4.5vh, 44px);
     padding-left: max(16px, env(safe-area-inset-left, 0px));
@@ -106,6 +106,17 @@
   .node:focus-visible::before, .node:focus-visible::after { color: var(--signal); }
   .node:focus-visible { text-decoration: underline; text-underline-offset: 6px; text-decoration-color: var(--signal); }
 
+  .film { display: inline-flex; align-items: center; gap: 12px; width: fit-content; max-width: 100%; color: var(--fg); text-decoration: none; }
+  .film-btn { position: relative; flex: none; width: 30px; height: 30px; border: 1px solid var(--fg); border-radius: 50%; display: grid; place-items: center; transition: border-color .25s ease, transform .3s ease; }
+  .film-btn::before { content: ""; margin-left: 2px; border-style: solid; border-width: 5px 0 5px 8px; border-color: transparent transparent transparent var(--fg); transition: border-color .25s ease; }
+  .film-btn::after { content: ""; position: absolute; inset: -1px; border: 1px solid var(--signal); border-radius: 50%; animation: filmping 2.8s ease-out infinite; }
+  @keyframes filmping { 0% { transform: scale(1); opacity: .9; } 70%, 100% { transform: scale(1.9); opacity: 0; } }
+  .film-t { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--dim); transition: color .25s ease; }
+  .film:hover .film-btn, .film:focus-visible .film-btn { border-color: var(--signal); transform: scale(1.08); }
+  .film:hover .film-btn::before, .film:focus-visible .film-btn::before { border-left-color: var(--signal); }
+  .film:hover .film-t, .film:focus-visible .film-t { color: var(--fg); }
+  .film:focus-visible { outline: none; }
+  @media (prefers-reduced-motion: reduce) { .film-btn::after { animation: none; opacity: 0; } }
   footer { position: relative; display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: center; }
   .ghost {
     appearance: none; background: none; border: 0; padding: 6px 0; cursor: pointer;
@@ -257,6 +268,7 @@
   <nav id="links" aria-label="Projects"></nav>
 
   <footer>
+    <a class="film" href="story.html" aria-label="Watch my story, three minutes"><span class="film-btn" aria-hidden="true"></span><span class="film-t">Watch my story · 3 min</span></a>
     <button class="ghost" id="noteBtn" type="button" hidden></button>
   </footer>
 </main>
