@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#07080a">
+<meta name="robots" content="noindex">
+<title>Teleprompter · My Story</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  :root { --bg:#07080a; --fg:#ecebe6; --dim:#868b91; --line:#23272c; --signal:#8fb7c9;
+    --display:"Bricolage Grotesque","Helvetica Neue",Arial,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; color-scheme:dark; }
+  * { box-sizing: border-box; }
+  html, body { margin:0; height:100dvh; background:var(--bg); color:var(--fg); }
+  body { font-family:var(--mono); -webkit-font-smoothing:antialiased; overflow:hidden; height:100dvh; display:flex; flex-direction:column; }
+  [hidden] { display:none !important; }
+  header { padding:calc(12px + env(safe-area-inset-top,0px)) 16px 10px; display:flex; align-items:center; gap:14px; border-bottom:1px solid var(--line); font-size:12px; letter-spacing:.14em; text-transform:uppercase; }
+  header .t { color:var(--signal); font-variant-numeric:tabular-nums; }
+  header .sp { flex:1; }
+  header .lab { color:var(--dim); }
+  #meter { height:2px; background:var(--line); } #meter i { display:block; height:100%; width:0; background:var(--signal); }
+  #scroll { flex:1 1 0; min-height:0; overflow-y:auto; scroll-behavior:smooth; padding:0 20px; }
+  #scroll::before { content:""; display:block; height:34vh; } #scroll::after { content:""; display:block; height:60vh; }
+  .sc { max-width:46rem; margin:0 auto 4.2rem; opacity:.28; transition:opacity .35s ease; }
+  .sc .big { font-size:11px; letter-spacing:.2em; text-transform:uppercase; color:var(--signal); margin-bottom:.7rem; }
+  .sc p { margin:0; font-family:var(--display); font-weight:500; font-size:var(--fs,34px); line-height:1.38; text-wrap:balance; }
+  .sc.on { opacity:1; } .sc.past { opacity:.16; }
+  .sc .left { margin-top:.8rem; font-size:11px; letter-spacing:.16em; color:var(--dim); font-variant-numeric:tabular-nums; }
+  footer { position:relative; z-index:2; background:var(--bg); padding:12px 16px calc(14px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--line); display:flex; gap:10px; flex-wrap:wrap; justify-content:center; align-items:center; }
+  button, .btn { appearance:none; background:none; color:var(--fg); border:1px solid var(--line); font:inherit; font-size:12px; letter-spacing:.16em; text-transform:uppercase; padding:12px 18px; cursor:pointer; text-decoration:none; }
+  button:hover, button:focus-visible, .btn:hover { border-color:var(--signal); color:var(--signal); outline:none; }
+  button.go { border-color:var(--signal); color:var(--signal); }
+  button.stop { border-color:#e5604f; color:#e5604f; }
+  #count { position:fixed; inset:0; display:grid; place-items:center; background:rgb(7 8 10 / .94); font-family:var(--display); font-weight:700; font-size:34vmin; z-index:5; }
+  #done { position:fixed; inset:0; z-index:6; background:var(--bg); padding:28px 20px; overflow:auto; }
+  #done .in { max-width:34rem; margin:0 auto; display:grid; gap:16px; }
+  #done h2 { margin:0; font-family:var(--display); font-size:2rem; text-transform:uppercase; }
+  #done p { margin:0; font-family:var(--display); font-weight:500; line-height:1.5; color:var(--dim); }
+  #done audio { width:100%; }
+  .note { font-size:12px; color:var(--dim); line-height:1.6; max-width:46rem; text-align:center; }
+</style>
+</head>
+<body>
+<header><span class="lab">Scene</span><span class="t" id="sceneNo">–</span><span class="sp"></span><span class="lab">Time</span><span class="t" id="clock">0:00 / 3:00</span></header>
+<div id="meter"><i id="mbar"></i></div>
+<main id="scroll"></main>
+<footer>
+  <button id="smaller" type="button" aria-label="Smaller text">A−</button>
+  <button id="bigger" type="button" aria-label="Larger text">A+</button>
+  <button id="next" type="button" hidden>Next scene ↓</button>
+  <button id="go" class="go" type="button">● Record</button>
+  <button id="rehearse" type="button">Rehearse (no recording)</button>
+  <button id="stop" class="stop" type="button" hidden>■ Stop</button>
+  <div class="note" id="note">Each scene highlights on schedule so you finish at 3:00. Read a little ahead of the highlight. Tap “Next scene” if you finish early and want to move on.</div>
+</footer>
+<div id="count" hidden>3</div>
+<div id="done" hidden><div class="in">
+  <h2>Take finished</h2>
+  <p id="doneMsg"></p>
+  <audio id="play" controls></audio>
+  <a class="btn" id="dl" download>Download recording</a>
+  <button id="retake" type="button">Record again</button>
+  <p>Save the download as <b>story.mp3</b> (or keep the name it gives) and upload it next to story.html, or send it to me and I'll fit the scenes to your voice.</p>
+</div></div>
+
+<script>
+/* scene list is generated from story.html, so the words and timings always match */
+const SCENES = [{"big":"Nov 8, 2019","text":"On November 8th, 2019, I was in an accident in San Francisco. I woke up in the hospital after ten days in a coma.","dur":11.61},{"big":"2023","text":"Four years later, I was standing beside the Sea of Galilee with a camera, filming the land I'd dreamed about since I was fifteen. This is how I got from one to the other.","dur":13.94},{"big":"Redding","text":"I was born in Tucson and grew up in Redding, California, in a church where people expected miracles.","dur":8.71},{"big":"Rwanda · 15","text":"At fifteen, my family moved to Rwanda. We were homeschooled and free, and always on the move.","dur":8.71},{"big":"3½ weeks","text":"That same year, we took a trip to Israel. Three and a half weeks. The Galilee, Jerusalem, the desert, all the way down to Petra. And I made a promise to myself: I'm coming back.","dur":16.26},{"big":"2015","text":"I went to Virginia Tech to study architecture. I led Bible studies. I started filming buildings, and people started asking me to film theirs.","dur":10.45},{"big":"San Francisco","text":"Then I moved to San Francisco and started freelancing as a filmmaker. It was working. For the first time, I could see a future.","dur":10.45},{"big":"2020","text":"Then, the accident. Ten days in a coma. Months of rehab. And before I was well, COVID sent the world home. I wanted my old life back, but the world went crazy.","dur":15.1},{"big":"The van","text":"I converted an old van to finish my thesis on the road. The engine died. So did a lot of other things. I came home with nothing to show for it.","dur":13.94},{"big":"2022","text":"I spent the next year picking myself up. Construction. A sawmill. A farm. Framing a house.","dur":10.45},{"big":"B.Arch · 2023","text":"Then I finished school, with a retreat center on my mom's land in Tennessee as my thesis. The Bible says God uses the wilderness to form people. I didn't believe that then. I do now.","dur":15.1},{"big":"2023","text":"In 2023, I finally came back to Israel. I'd waited twelve years. I came to volunteer for three months. Then the war began, and I flew home.","dur":11.61},{"big":"One way","text":"A year later, I tried to return on my own. Because of the war with Iran, my flight got canceled. Then Magdala invited me.","dur":12.77},{"big":"Today","text":"I live by the Sea of Galilee. I film pilgrims, churches and communities across the Holy Land. That's the short version. The long version is the one worth hearing.","dur":20.9}];
+const $ = id => document.getElementById(id);
+const fmt = s => Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+let t0 = 0; SCENES.forEach(s => { s.start = t0; t0 += s.dur; });
+const TOTAL = t0;
+$("clock").textContent = "0:00 / " + fmt(TOTAL);
+
+const box = $("scroll");
+SCENES.forEach((s, i) => {
+  const d = document.createElement("div"); d.className = "sc"; d.id = "sc" + i;
+  d.innerHTML = '<div class="big"></div><p></p><div class="left"></div>';
+  d.querySelector(".big").textContent = String(i + 1).padStart(2, "0") + " · " + (s.big || "");
+  d.querySelector("p").textContent = s.text;
+  box.appendChild(d);
+});
+let fs = 34; const setFs = () => document.documentElement.style.setProperty("--fs", fs + "px");
+$("bigger").onclick = () => { fs = Math.min(64, fs + 4); setFs(); }; $("smaller").onclick = () => { fs = Math.max(20, fs - 4); setFs(); }; setFs();
+
+let running = false, startedAt = 0, rec = null, chunks = [], stream = null, cur = -1, raf = 0, mime = "";
+const marks = [];
+function setActive(i) {
+  if (i === cur) return; cur = i;
+  SCENES.forEach((_, k) => { const e = $("sc" + k); e.classList.toggle("on", k === i); e.classList.toggle("past", k < i); });
+  const e = $("sc" + i); if (e) { box.scrollTo({ top: e.offsetTop - box.clientHeight * .34, behavior: "smooth" }); }
+  $("sceneNo").textContent = (i + 1) + " / " + SCENES.length;
+}
+let skip = 0; /* seconds jumped ahead with Next */
+function tick() {
+  if (!running) return;
+  const t = (performance.now() - startedAt) / 1000 + skip;
+  let i = 0; SCENES.forEach((s, k) => { if (t >= s.start) i = k; });
+  setActive(i);
+  const s = SCENES[i], left = Math.max(0, s.start + s.dur - t);
+  $("sc" + i).querySelector(".left").textContent = left.toFixed(0) + "s left in this scene";
+  $("clock").textContent = fmt(Math.min(t, TOTAL)) + " / " + fmt(TOTAL);
+  $("mbar").style.width = Math.min(100, t / TOTAL * 100) + "%";
+  if (t >= TOTAL + 1.5) { finish(); return; }
+  raf = requestAnimationFrame(tick);
+}
+function countdown() { return new Promise(res => { const c = $("count"); c.hidden = false; let n = 3; c.textContent = n; const iv = setInterval(() => { n--; if (n <= 0) { clearInterval(iv); c.hidden = true; res(); } else c.textContent = n; }, 1000); }); }
+
+async function begin(withAudio) {
+  if (withAudio) {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: true } });
+      const opts = ["audio/mp4", "audio/webm;codecs=opus", "audio/webm"]; mime = opts.find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+      rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined); chunks = []; rec.ondataavailable = e => e.data.size && chunks.push(e.data);
+    } catch (e) { alert("I couldn't reach the microphone. Allow microphone access for this page, and open it from michaelfolta.com (not a file on your phone). You can still use Rehearse."); return; }
+  }
+  $("go").hidden = $("rehearse").hidden = true; $("note").hidden = true; cur = -1; skip = 0; marks.length = 0;
+  box.scrollTo({ top: 0, behavior: "instant" });
+  await countdown();
+  if (rec) rec.start(1000);
+  $("stop").hidden = $("next").hidden = false; running = true; startedAt = performance.now(); tick();
+}
+function nextScene() {
+  if (!running) return; const t = (performance.now() - startedAt) / 1000 + skip;
+  const i = cur + 1; if (i >= SCENES.length) return; skip = SCENES[i].start - (performance.now() - startedAt) / 1000;
+}
+function finish() {
+  if (!running) return; running = false; cancelAnimationFrame(raf);
+  $("stop").hidden = $("next").hidden = true; $("go").hidden = $("rehearse").hidden = false; $("note").hidden = false;
+  if (rec && rec.state !== "inactive") {
+    rec.onstop = () => {
+      stream.getTracks().forEach(t => t.stop());
+      const type = rec.mimeType || mime || "audio/webm", ext = /mp4/.test(type) ? "m4a" : "webm";
+      const blob = new Blob(chunks, { type }), url = URL.createObjectURL(blob);
+      $("play").src = url; $("dl").href = url; $("dl").download = "story." + ext;
+      $("doneMsg").textContent = "Listen back. If you like it, download it. If not, record again; it only takes three minutes.";
+      $("done").hidden = false; rec = null;
+    }; rec.stop();
+  }
+}
+$("go").onclick = () => begin(true); $("rehearse").onclick = () => begin(false);
+$("stop").onclick = finish; $("next").onclick = nextScene;
+$("retake").onclick = () => { $("done").hidden = true; $("play").pause(); };
+addEventListener("keydown", e => { if (e.key === " " && running) { e.preventDefault(); nextScene(); } });
+window.__start = () => begin(false);
+</script>
+</body>
+</html>
